@@ -126,10 +126,11 @@ int main(int argc, char **argv) {
 
     ImageParam input(Float(32), 3);
 
-    Var x("x"), y("y"), c("c"), k("k");
+    HL_VAR4(x, y, c, k);
 
-    Func clamped("clamped");
-    clamped(x, y, c) = input(clamp(x, 0, input.width()-1), clamp(y, 0, input.height()-1), c);
+    HL_FUNC(clamped) {
+        clamped(x, y, c) = input(clamp(x, 0, input.width()-1), clamp(y, 0, input.height()-1), c);
+    }
 
     // For downscaling, widen the interpolation kernel to perform lowpass
     // filtering.
@@ -143,28 +144,35 @@ int main(int argc, char **argv) {
     // Initialize interpolation kernels. Since we allow an arbitrary
     // scaling factor, the filter coefficients are different for each x
     // and y coordinate.
-    Func kernelx("kernelx"), kernely("kernely");
     Expr beginx = cast<int>(sourcex - kernelSize + 0.5f);
     Expr beginy = cast<int>(sourcey - kernelSize + 0.5f);
     RDom domx(0, static_cast<int>(2.0f * kernelSize) + 1, "domx");
     RDom domy(0, static_cast<int>(2.0f * kernelSize) + 1, "domy");
-    {
-        const KernelInfo &info = kernelInfo[interpolationType];
-        Func kx, ky;
-        kx(x, k) = info.kernel((k + beginx - sourcex) * kernelScaling);
-        ky(y, k) = info.kernel((k + beginy - sourcey) * kernelScaling);
+    HL_FUNC(kernelx) {
+        HL_FUNC(kx) {
+            const KernelInfo &info = kernelInfo[interpolationType];
+            kx(x, k) = info.kernel((k + beginx - sourcex) * kernelScaling);
+        }
         kernelx(x, k) = kx(x, k) / sum(kx(x, domx));
+    }
+    HL_FUNC(kernely) {
+        HL_FUNC(ky) {
+            const KernelInfo &info = kernelInfo[interpolationType];
+            ky(y, k) = info.kernel((k + beginy - sourcey) * kernelScaling);
+        }
         kernely(y, k) = ky(y, k) / sum(ky(y, domy));
     }
 
     // Perform separable resizing
-    Func resized_x("resized_x");
-    Func resized_y("resized_y");
-    resized_x(x, y, c) = sum(kernelx(x, domx) * cast<float>(clamped(domx + beginx, y, c)));
-    resized_y(x, y, c) = sum(kernely(y, domy) * resized_x(x, domy + beginy, c));
-
-    Func final("final");
-    final(x, y, c) = clamp(resized_y(x, y, c), 0.0f, 1.0f);
+    HL_FUNC(resized_x) {
+        resized_x(x, y, c) = sum(kernelx(x, domx) * cast<float>(clamped(domx + beginx, y, c)));
+    }
+    HL_FUNC(resized_y) {
+        resized_y(x, y, c) = sum(kernely(y, domy) * resized_x(x, domy + beginy, c));
+    }
+    HL_FUNC(final) {
+        final(x, y, c) = clamp(resized_y(x, y, c), 0.0f, 1.0f);
+    }
 
     std::cout << "Finished function setup." << std::endl;
 

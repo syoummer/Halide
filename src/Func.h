@@ -18,6 +18,13 @@
 #include "Tuple.h"
 #include "Target.h"
 
+#ifndef HL_STRINGIZE
+#define HL_STRINGIZE(x) HL_STRINGIZE_(x)
+#define HL_STRINGIZE_(x) #x
+#endif
+
+#define HL_FUNC(x) Halide::Func x(#x, __FILE__ ":" HL_STRINGIZE(__LINE__)); if (true)
+
 namespace Halide {
 
 /** A fragment of front-end syntax of the form f(x, y, z), where x,
@@ -379,7 +386,8 @@ public:
     EXPORT static void test();
 
     /** Declare a new undefined function with the given name */
-    EXPORT explicit Func(const std::string &name);
+    EXPORT explicit Func(const std::string &name,
+                         const std::string &debuginfo = "");
 
     /** Declare a new undefined function with an
      * automatically-generated unique name */

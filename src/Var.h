@@ -10,6 +10,11 @@
 #include "IR.h"
 #include <sstream>
 
+#define HL_VAR(x) Halide::Var x(#x)
+#define HL_VAR2(x,y) HL_VAR(x); HL_VAR(y)
+#define HL_VAR3(x,y,z) HL_VAR(x); HL_VAR(y); HL_VAR(z)
+#define HL_VAR4(x,y,z,a) HL_VAR(x); HL_VAR(y); HL_VAR(z); HL_VAR(a)
+
 namespace Halide {
 
 /** A Halide variable, to be used when defining functions. It is just

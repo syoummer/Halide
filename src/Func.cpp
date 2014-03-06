@@ -30,14 +30,15 @@ using std::ofstream;
 
 using namespace Internal;
 
-Func::Func(const string &name) : func(unique_name(name)),
-                                 error_handler(NULL),
-                                 custom_malloc(NULL),
-                                 custom_free(NULL),
-                                 custom_do_par_for(NULL),
-                                 custom_do_task(NULL),
-                                 custom_trace(NULL),
-                                 random_seed(0) {
+Func::Func(const string &name, const string &debuginfo)
+    : func(unique_name(name), debuginfo),
+      error_handler(NULL),
+      custom_malloc(NULL),
+      custom_free(NULL),
+      custom_do_par_for(NULL),
+      custom_do_task(NULL),
+      custom_trace(NULL),
+      random_seed(0) {
 }
 
 Func::Func() : func(unique_name('f')),

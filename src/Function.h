@@ -65,6 +65,7 @@ struct FunctionContents {
     std::vector<ReductionDefinition> reductions;
 
     std::string debug_file;
+    std::string debug_info;
 
     std::vector<Parameter> output_buffers;
 
@@ -109,16 +110,23 @@ public:
     void define_reduction(const std::vector<Expr> &args, std::vector<Expr> values);
 
     /** Construct a new function with the given name */
-    Function(const std::string &n) : contents(new FunctionContents) {
+    Function(const std::string &n, const std::string &debuginfo = "")
+        : contents(new FunctionContents) {
         for (size_t i = 0; i < n.size(); i++) {
             assert(n[i] != '.' && "Func names may not contain the character '.', as it is used internally by Halide as a separator");
         }
         contents.ptr->name = n;
+        contents.ptr->debug_info = debuginfo;
     }
 
     /** Get the name of the function */
     const std::string &name() const {
         return contents.ptr->name;
+    }
+
+    /** Get the debug information associated with the functions. */
+    const std::string &debuginfo() const {
+        return contents.ptr->debug_info;
     }
 
     /** Get the pure arguments */
